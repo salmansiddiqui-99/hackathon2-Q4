@@ -1,55 +1,169 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+=============================================================================
+SYNC IMPACT REPORT
+=============================================================================
+Version Change: 1.0.0 (initial) → 1.0.0
+Modified Principles: N/A (initial creation)
+Added Sections:
+  - Core Principles (7 principles)
+  - Key Standards
+  - Constraints
+  - Phases Overview
+  - Governance
+Removed Sections: N/A (initial creation)
+Templates Validated:
+  - .specify/templates/plan-template.md ✅ (Constitution Check section present)
+  - .specify/templates/spec-template.md ✅ (Requirements/Success Criteria aligned)
+  - .specify/templates/tasks-template.md ✅ (User story organization compatible)
+Follow-up TODOs: None
+=============================================================================
+-->
+
+# Hackathon II - The Evolution of Todo Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Spec-Driven Development
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All implementations MUST start with detailed specifications refined through iterations with Claude Code. No code generation may proceed without an approved specification document. Specifications serve as the single source of truth for feature requirements and acceptance criteria.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: Ensures alignment between intent and implementation; reduces rework; creates traceable audit trail from requirements to code.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. No Manual Coding
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+Code generation MUST be handled exclusively by Claude Code. Human developers refine specifications until Claude Code produces correct output. Direct manual code editing is prohibited except for configuration files and environment setup.
 
-### [PRINCIPLE_6_NAME]
+**Rationale**: Validates the Agentic Dev Stack workflow; ensures all implementations are traceable to specs and AI generations; demonstrates the hackathon's core thesis.
 
+### III. Iterative Evolution
 
-[PRINCIPLE__DESCRIPTION]
+The application MUST progress through defined phases: console app → web application → AI chatbot → local Kubernetes → cloud deployment. Each phase builds upon the previous, maintaining backward compatibility and feature parity.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Rationale**: Demonstrates progressive complexity mastery; ensures solid foundations before advanced features; provides clear milestones for evaluation.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Cloud-Native Focus
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Architecture MUST emphasize containerization, orchestration, event-driven patterns, and AIOps. All production-bound code must be container-ready. Kubernetes manifests and Helm charts are first-class artifacts.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Rationale**: Prepares application for scalable, resilient deployment; aligns with modern infrastructure practices; enables advanced features like auto-scaling and service mesh.
+
+### V. Reusable Intelligence
+
+Agent skills and subagents MUST be developed as modular, reusable components. MCP tools must be stateless and composable. AI agent behaviors must be defined declaratively and be testable independently.
+
+**Rationale**: Promotes code reuse across phases; enables bonus features like multi-language support; supports the agentic development paradigm.
+
+### VI. Stateless Design
+
+Chatbots, API handlers, and MCP tools MUST be stateless. All state MUST be persisted to the database (Neon PostgreSQL). Session and conversation state must be recoverable from database alone.
+
+**Rationale**: Enables horizontal scaling; simplifies container orchestration; ensures reliability across restarts and deployments.
+
+### VII. Multi-User Data Isolation
+
+All data operations MUST be scoped by user_id. API endpoints MUST validate user ownership before data access. Cross-user data leakage is a critical failure.
+
+**Rationale**: Security requirement for multi-tenant application; enables safe shared infrastructure; meets hackathon evaluation criteria.
+
+## Key Standards
+
+### Technology Stack Adherence
+
+- **Phase I**: Python 3.13+, UV package manager
+- **Phase II**: Next.js 16+ (App Router), Python FastAPI, SQLModel, Neon PostgreSQL, Better Auth
+- **Phase III**: OpenAI Agents SDK, Official MCP SDK, OpenAI ChatKit
+- **Phase IV**: Docker Desktop, Minikube, Helm Charts, kubectl-ai, Kagent
+- **Phase V**: Kafka/Dapr, Azure AKS/Google GKE/Oracle OKE, GitHub Actions CI/CD
+
+### Authentication and Security
+
+- User authentication via Better Auth (signup/signin)
+- API security via JWT tokens for user isolation
+- Secrets managed via environment variables; never hardcoded
+- OWASP Top 10 compliance mandatory
+
+### API Contract Standards
+
+- RESTful endpoints following pattern: `/api/{user_id}/resource`
+- JSON request/response format
+- Proper HTTP status codes (200, 201, 400, 401, 404, 500)
+- All endpoints documented with input/output schemas
+
+### Testing Discipline
+
+- All acceptance criteria must be independently testable
+- Contract tests for API endpoints
+- Integration tests for user journeys
+- Tests must fail before implementation (TDD when applicable)
+
+## Constraints
+
+### Development Environment
+
+- Development MUST use WSL 2 on Windows
+- Python version MUST be 3.13+
+- Package management via UV exclusively
+- No additional tools beyond specified stacks
+
+### Feature Progression
+
+Features MUST be implemented progressively:
+
+1. **Basic Level**: Add, Delete, Update, View, Mark Complete
+2. **Intermediate Level**: Priorities, Tags, Search, Filter, Sort
+3. **Advanced Level**: Recurring Tasks, Due Dates, Reminders
+
+### Deployment Requirements
+
+- **Phase IV**: Local deployment on Minikube
+- **Phase V**: Cloud deployment on DigitalOcean, Azure, Google Cloud, or Oracle
+
+### Submission Requirements
+
+- Public GitHub repository
+- Constitution file (.specify/memory/constitution.md)
+- Specs history folder (specs/)
+- Source code in /src
+- README.md with setup instructions
+- CLAUDE.md with Claude Code instructions
+- Demo video under 90 seconds
+
+## Phases Overview
+
+| Phase | Objective | Key Deliverables |
+|-------|-----------|------------------|
+| I | In-Memory Console App | Python CLI with basic CRUD |
+| II | Full-Stack Web App | Next.js + FastAPI + Neon DB |
+| III | AI Chatbot | MCP Server + OpenAI Agents |
+| IV | Local Kubernetes | Minikube + Helm Charts |
+| V | Cloud Deployment | AKS/GKE/OKE + Kafka/Dapr |
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Amendment Procedure
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+1. Proposed changes documented in PR description
+2. Impact analysis on existing artifacts required
+3. Version bump following semantic versioning
+4. All dependent templates updated synchronously
+
+### Versioning Policy
+
+- **MAJOR**: Backward incompatible principle changes
+- **MINOR**: New principles or sections added
+- **PATCH**: Clarifications and wording improvements
+
+### Compliance Review
+
+- All PRs must verify constitution compliance
+- Spec-driven development violations block merge
+- Manual code introduction requires explicit justification and approval
+
+### Runtime Guidance
+
+For development guidance beyond this constitution, refer to:
+- `CLAUDE.md` for Claude Code operational instructions
+- `README.md` for project setup and execution
+- Individual feature specs in `specs/` directory
+
+**Version**: 1.0.0 | **Ratified**: 2025-12-31 | **Last Amended**: 2025-12-31
