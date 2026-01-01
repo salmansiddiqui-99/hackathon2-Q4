@@ -4,23 +4,38 @@ from datetime import datetime
 from src.models.task import Task
 from src.services.task_service import TaskService
 from src.utils.date_parser import parse_natural_date
+from src.cli.formatter import (
+    get_console,
+    format_menu_header,
+    format_section_header,
+    format_separator,
+    format_task_panel,
+    format_success,
+    format_error,
+    format_warning,
+    format_info,
+    format_status_badge,
+    format_priority_badge
+)
 
 
 def display_menu() -> None:
-    """Display the main menu options."""
-    print("\n=== Todo App ===")
-    print("1. Add Task")
-    print("2. List Tasks")
-    print("3. Update Task")
-    print("4. Delete Task")
-    print("5. Mark Status")
-    print("6. Manage Tags")
-    print("7. Search Tasks")
-    print("8. Filter Tasks")
-    print("9. Sort Tasks")
-    print("10. Check Reminders")
-    print("11. Exit")
-    print()
+    """Display the main menu options (T013)."""
+    console = get_console()
+    console.print()
+    console.print(format_menu_header("Todo App"))
+    console.print("[cyan]1.[/] Add Task")
+    console.print("[cyan]2.[/] List Tasks")
+    console.print("[cyan]3.[/] Update Task")
+    console.print("[cyan]4.[/] Delete Task")
+    console.print("[cyan]5.[/] Mark Status")
+    console.print("[cyan]6.[/] Manage Tags")
+    console.print("[cyan]7.[/] Search Tasks")
+    console.print("[cyan]8.[/] Filter Tasks")
+    console.print("[cyan]9.[/] Sort Tasks")
+    console.print("[cyan]10.[/] Check Reminders")
+    console.print("[cyan]11.[/] Exit")
+    console.print()
 
 
 def get_menu_choice() -> str:
@@ -33,16 +48,17 @@ def get_menu_choice() -> str:
 
 
 def handle_add_task(service: TaskService) -> None:
-    """Handle adding a new task.
+    """Handle adding a new task (T014).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Add Task ---")
+    console = get_console()
+    console.print(format_section_header("Add Task"))
     title = input("Enter title: ").strip()
 
     if not title:
-        print("Error: Title cannot be empty.")
+        console.print(format_error("Title cannot be empty."))  # T040
         return
 
     description = input("Enter description (press Enter to skip): ").strip()
@@ -68,85 +84,70 @@ def handle_add_task(service: TaskService) -> None:
     if due_date_input:
         due_date = parse_natural_date(due_date_input)
         if due_date is None:
-            print("Warning: Invalid date format. Task will have no due date.")
+            console.print(format_warning("Invalid date format. Task will have no due date."))  # T041
 
     try:
         task = service.add_task(title, description, priority, tags, recurrence, due_date)
-        print(f"Task #{task.id} created successfully with priority '{task.priority}'.")
+        priority_badge = format_priority_badge(task.priority)
+        # T039: Success message with formatting
+        console.print(format_success(f"Task #{task.id} created successfully with priority {priority_badge}."))
         if task.tags:
-            print(f"Tags: {', '.join(task.tags)}")
+            console.print(f"[dim]Tags: {', '.join(task.tags)}[/]")
         if task.recurrence != "none":
-            print(f"Recurrence: {task.recurrence}")
+            console.print(f"[dim]Recurrence: {task.recurrence}[/]")
         if task.due_date:
-            print(f"Due date: {task.due_date.strftime('%Y-%m-%d %H:%M')}")
+            console.print(f"[dim]Due date: {task.due_date.strftime('%Y-%m-%d %H:%M')}[/]")
     except ValueError as e:
-        print(f"Error: {e}")
+        console.print(format_error(str(e)))  # T042
 
 
 def handle_list_tasks(service: TaskService) -> None:
-    """Handle listing all tasks.
+    """Handle listing all tasks (T015, T025, T026).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- All Tasks ---")
+    console = get_console()
+    console.print(format_section_header("All Tasks"))
 
     # Check if sort preference is active
     sort_pref = service.get_sort_preference()
     if sort_pref != "none":
         tasks = service.get_sorted_tasks()
-        print(f"(Sorted by: {sort_pref})")
+        console.print(f"[dim](Sorted by: {sort_pref})[/]")
     else:
         tasks = service.list_tasks()
 
     if not tasks:
-        print("No tasks found.")
+        console.print(format_info("No tasks found."))
         return
 
     now = datetime.now()
 
     for task in tasks:
-        # Display priority and tags in header
-        tags_display = f"[{', '.join(task.tags)}]" if task.tags else "[]"
-        print(f"\nID: {task.id} | Title: {task.title} | Status: {task.status} | Priority: {task.priority}")
-        print(f"   Tags: {tags_display}")
-        if task.description:
-            print(f"   Description: {task.description}")
-        else:
-            print("   Description: (no description)")
-
-        # Display recurrence if not "none"
-        if task.recurrence != "none":
-            print(f"   Recurrence: {task.recurrence}")
-
-        # Display due date with overdue indicator
-        if task.due_date:
-            due_str = task.due_date.strftime('%Y-%m-%d %H:%M')
-            if task.due_date < now and task.status != "completed":
-                print(f"   Due date: {due_str} [OVERDUE]")
-            else:
-                print(f"   Due date: {due_str}")
-        else:
-            print("   Due date: No due date")
+        # Display task in formatted panel (T025)
+        console.print(format_task_panel(task, now))
+        console.print()  # Add spacing between tasks (T026)
 
 
 def handle_update_task(service: TaskService) -> None:
-    """Handle updating a task.
+    """Handle updating a task (T016).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Update Task ---")
+    console = get_console()
+    console.print(format_section_header("Update Task"))
 
     try:
         task_id = int(input("Enter task ID to update: ").strip())
     except ValueError:
-        print("Error: Please enter a valid numeric ID.")
+        console.print(format_error("Please enter a valid numeric ID."))  # T043
         return
 
     task = service.get_task(task_id)
     if task is None:
-        print(f"Error: Task #{task_id} not found.")
+        console.print(format_error(f"Task #{task_id} not found."))  # T044
         return
 
     print(f"Current title: {task.title}")
@@ -178,7 +179,7 @@ def handle_update_task(service: TaskService) -> None:
     if new_due_date_input:
         parsed_date = parse_natural_date(new_due_date_input)
         if parsed_date is None:
-            print("Warning: Invalid date format. Due date will not be changed.")
+            console.print(format_warning("Invalid date format. Due date will not be changed."))  # T046
         else:
             due_date_update = parsed_date
 
@@ -192,48 +193,50 @@ def handle_update_task(service: TaskService) -> None:
             due_date_update
         )
         if updated:
-            print(f"Task #{task_id} updated successfully.")
+            console.print(format_success(f"Task #{task_id} updated successfully."))  # T045
     except ValueError as e:
-        print(f"Error: {e}")
+        console.print(format_error(str(e)))  # T044 (also handles ValueError)
 
 
 def handle_delete_task(service: TaskService) -> None:
-    """Handle deleting a task.
+    """Handle deleting a task (T017).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Delete Task ---")
+    console = get_console()
+    console.print(format_section_header("Delete Task"))
 
     try:
         task_id = int(input("Enter task ID to delete: ").strip())
     except ValueError:
-        print("Error: Please enter a valid numeric ID.")
+        console.print(format_error("Please enter a valid numeric ID."))  # T047
         return
 
     if service.delete_task(task_id):
-        print(f"Task #{task_id} deleted successfully.")
+        console.print(format_success(f"Task #{task_id} deleted successfully."))  # T048
     else:
-        print(f"Error: Task #{task_id} not found.")
+        console.print(format_error(f"Task #{task_id} not found."))  # T049
 
 
 def handle_mark_status(service: TaskService) -> None:
-    """Handle changing task status.
+    """Handle changing task status (T018).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Mark Status ---")
+    console = get_console()
+    console.print(format_section_header("Mark Status"))
 
     try:
         task_id = int(input("Enter task ID: ").strip())
     except ValueError:
-        print("Error: Please enter a valid numeric ID.")
+        console.print(format_error("Please enter a valid numeric ID."))  # T050
         return
 
     task = service.get_task(task_id)
     if task is None:
-        print(f"Error: Task #{task_id} not found.")
+        console.print(format_error(f"Task #{task_id} not found."))  # T051
         return
 
     print(f"Current status: {task.status}")
@@ -247,31 +250,32 @@ def handle_mark_status(service: TaskService) -> None:
     try:
         updated = service.update_status(task_id, new_status)
         if updated:
-            print(f"Task #{task_id} status changed to '{new_status}'.")
+            console.print(format_success(f"Task #{task_id} status changed to '{new_status}'."))  # T052
             # Show auto-generation message if recurring task was completed
             if new_status == "completed" and is_recurring:
-                print(f"Auto-generated next occurrence of recurring task (recurrence: {task.recurrence}).")
+                console.print(format_info(f"Auto-generated next occurrence of recurring task (recurrence: {task.recurrence})."))  # T053
     except ValueError as e:
-        print(f"Error: {e}")
+        console.print(format_error(str(e)))  # T054
 
 
 def handle_manage_tags(service: TaskService) -> None:
-    """Handle adding or removing tags from a task.
+    """Handle adding or removing tags from a task (T019).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Manage Tags ---")
+    console = get_console()
+    console.print(format_section_header("Manage Tags"))
 
     try:
         task_id = int(input("Enter task ID: ").strip())
     except ValueError:
-        print("Error: Please enter a valid numeric ID.")
+        console.print(format_error("Please enter a valid numeric ID."))  # T055
         return
 
     task = service.get_task(task_id)
     if task is None:
-        print(f"Error: Task #{task_id} not found.")
+        console.print(format_error(f"Task #{task_id} not found."))  # T056
         return
 
     print(f"Current tags: {', '.join(task.tags) if task.tags else '(no tags)'}")
@@ -287,54 +291,52 @@ def handle_manage_tags(service: TaskService) -> None:
             tags = [tag.strip() for tag in tags_input.split(",")]
             updated = service.add_tags_to_task(task_id, tags)
             if updated:
-                print(f"Tags added. Current tags: {', '.join(updated.tags)}")
+                console.print(format_success(f"Tags added. Current tags: {', '.join(updated.tags)}"))  # T057
     elif choice == "2":
         if not task.tags:
-            print("No tags to remove.")
+            console.print(format_info("No tags to remove."))  # T059
             return
         tag_to_remove = input("Enter tag to remove: ").strip()
         updated = service.remove_tag_from_task(task_id, tag_to_remove)
         if updated:
-            print(f"Tag removed. Current tags: {', '.join(updated.tags) if updated.tags else '(no tags)'}")
+            console.print(format_success(f"Tag removed. Current tags: {', '.join(updated.tags) if updated.tags else '(no tags)'}"))  # T058
     elif choice == "3":
-        print("Cancelled.")
+        console.print(format_info("Cancelled."))  # T060
     else:
-        print("Invalid choice.")
+        console.print(format_error("Invalid choice."))  # T061
 
 
 def handle_search_tasks(service: TaskService) -> None:
-    """Handle searching tasks by keyword.
+    """Handle searching tasks by keyword (T020, T034).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Search Tasks ---")
+    console = get_console()
+    console.print(format_section_header("Search Tasks"))
     keyword = input("Enter search keyword: ").strip()
 
     results = service.search_tasks(keyword)
 
     if not results:
-        print("No tasks found matching your search.")
+        console.print(format_info("No tasks found matching your search."))
         return
 
-    print(f"\nFound {len(results)} task(s):")
+    console.print(f"\n[bold]Found {len(results)} task(s):[/]")
+    now = datetime.now()
     for task in results:
-        tags_display = f"[{', '.join(task.tags)}]" if task.tags else "[]"
-        print(f"\nID: {task.id} | Title: {task.title} | Status: {task.status} | Priority: {task.priority}")
-        print(f"   Tags: {tags_display}")
-        if task.description:
-            print(f"   Description: {task.description}")
-        else:
-            print("   Description: (no description)")
+        console.print(format_task_panel(task, now))
+        console.print()
 
 
 def handle_filter_tasks(service: TaskService) -> None:
-    """Handle filtering tasks by status, priority, or tag.
+    """Handle filtering tasks by status, priority, or tag (T021).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Filter Tasks ---")
+    console = get_console()
+    console.print(format_section_header("Filter Tasks"))
     print("Filter by:")
     print("1. Status")
     print("2. Priority")
@@ -358,34 +360,31 @@ def handle_filter_tasks(service: TaskService) -> None:
         results = service.filter_tasks("tag", tag)
         filter_label = f"tag={tag}"
     elif choice == "4":
-        print("Cancelled.")
+        console.print(format_info("Cancelled."))  # T064
         return
     else:
-        print("Invalid choice.")
+        console.print(format_error("Invalid choice."))  # T065
         return
 
     if not results:
-        print(f"No tasks found matching filter: {filter_label}")
+        console.print(format_info(f"No tasks found matching filter: {filter_label}"))
         return
 
-    print(f"\nFound {len(results)} task(s) matching {filter_label}:")
+    console.print(f"\n[bold]Found {len(results)} task(s) matching {filter_label}:[/]")
+    now = datetime.now()
     for task in results:
-        tags_display = f"[{', '.join(task.tags)}]" if task.tags else "[]"
-        print(f"\nID: {task.id} | Title: {task.title} | Status: {task.status} | Priority: {task.priority}")
-        print(f"   Tags: {tags_display}")
-        if task.description:
-            print(f"   Description: {task.description}")
-        else:
-            print("   Description: (no description)")
+        console.print(format_task_panel(task, now))
+        console.print()
 
 
 def handle_sort_tasks(service: TaskService) -> None:
-    """Handle setting sort preference for task list.
+    """Handle setting sort preference for task list (T022).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Sort Tasks ---")
+    console = get_console()
+    console.print(format_section_header("Sort Tasks"))
     print("Sort by:")
     print("1. Priority (high to low)")
     print("2. Title (A-Z)")
@@ -397,41 +396,42 @@ def handle_sort_tasks(service: TaskService) -> None:
 
     if choice == "1":
         service.set_sort_preference("priority")
-        print("Tasks will now be sorted by priority (high to low).")
+        console.print(format_success("Tasks will now be sorted by priority (high to low)."))  # T066
     elif choice == "2":
         service.set_sort_preference("title")
-        print("Tasks will now be sorted alphabetically by title.")
+        console.print(format_success("Tasks will now be sorted alphabetically by title."))  # T066
     elif choice == "3":
         service.set_sort_preference("created")
-        print("Tasks will now be sorted by creation date (oldest first).")
+        console.print(format_success("Tasks will now be sorted by creation date (oldest first)."))  # T066
     elif choice == "4":
         service.set_sort_preference("none")
-        print("Sort preference cleared. Tasks will be shown in default order.")
+        console.print(format_success("Sort preference cleared. Tasks will be shown in default order."))  # T066
     elif choice == "5":
-        print("Cancelled.")
+        console.print(format_info("Cancelled."))  # T067
     else:
-        print("Invalid choice.")
+        console.print(format_error("Invalid choice."))  # T068
 
 
 def handle_check_reminders(service: TaskService) -> None:
-    """Display overdue and soon-due tasks.
+    """Display overdue and soon-due tasks (T023, T036-T037).
 
     Args:
         service: The TaskService instance
     """
-    print("\n--- Check Reminders ---")
+    console = get_console()
+    console.print(format_section_header("Check Reminders"))
 
     overdue = service.get_overdue_tasks()
     soon_due = service.get_soon_due_tasks(24)
 
     if not overdue and not soon_due:
-        print("No overdue or upcoming tasks.")
+        console.print(format_info("No overdue or upcoming tasks."))
         return
 
     now = datetime.now()
 
     if overdue:
-        print("\n** Overdue Tasks **")
+        console.print("\n[red bold]** Overdue Tasks **[/]")  # T036: Red highlighting
         for task in overdue:
             # Calculate how long overdue
             time_diff = now - task.due_date
@@ -443,12 +443,13 @@ def handle_check_reminders(service: TaskService) -> None:
             else:
                 overdue_str = f"{hours} hour(s) overdue"
 
-            print(f"\nID: {task.id} | Title: {task.title} | Priority: {task.priority}")
-            print(f"   Due: {task.due_date.strftime('%Y-%m-%d %H:%M')} ({overdue_str})")
-            print(f"   Status: {task.status}")
+            priority_badge = format_priority_badge(task.priority)
+            console.print(f"\n[bold]ID:[/] {task.id} | [bold]Title:[/] {task.title} | [bold]Priority:[/] {priority_badge}")
+            console.print(f"   [bold]Due:[/] {task.due_date.strftime('%Y-%m-%d %H:%M')} [red]({overdue_str})[/]")
+            console.print(f"   [bold]Status:[/] {format_status_badge(task.status)}")
 
     if soon_due:
-        print("\n** Due Soon (within 24 hours) **")
+        console.print("\n[yellow bold]** Due Soon (within 24 hours) **[/]")  # T037: Yellow highlighting
         for task in soon_due:
             # Calculate time remaining
             time_diff = task.due_date - now
@@ -462,6 +463,7 @@ def handle_check_reminders(service: TaskService) -> None:
             else:
                 remaining_str = f"in {minutes} minute(s)"
 
-            print(f"\nID: {task.id} | Title: {task.title} | Priority: {task.priority}")
-            print(f"   Due: {task.due_date.strftime('%Y-%m-%d %H:%M')} ({remaining_str})")
-            print(f"   Status: {task.status}")
+            priority_badge = format_priority_badge(task.priority)
+            console.print(f"\n[bold]ID:[/] {task.id} | [bold]Title:[/] {task.title} | [bold]Priority:[/] {priority_badge}")
+            console.print(f"   [bold]Due:[/] {task.due_date.strftime('%Y-%m-%d %H:%M')} [yellow]({remaining_str})[/]")
+            console.print(f"   [bold]Status:[/] {format_status_badge(task.status)}")

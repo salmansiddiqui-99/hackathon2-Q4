@@ -15,13 +15,15 @@ from src.cli.menu import (
     handle_sort_tasks,
     handle_check_reminders,
 )
+from src.cli.formatter import get_console, format_menu_header, format_success, format_error
 
 
 def main() -> None:
-    """Run the todo application main loop."""
+    """Run the todo application main loop (T027, T070-T071)."""
     service = TaskService()
+    console = get_console()
 
-    print("Welcome to Todo App!")
+    console.print(format_menu_header("Welcome to Todo App!"))
 
     while True:
         display_menu()
@@ -48,10 +50,10 @@ def main() -> None:
         elif choice == "10":
             handle_check_reminders(service)
         elif choice == "11":
-            print("Goodbye!")
+            console.print(format_success("Goodbye!"))  # T071
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 11.")
+            console.print(format_error("Invalid choice. Please enter a number between 1 and 11."))  # T070
 
 
 if __name__ == "__main__":
