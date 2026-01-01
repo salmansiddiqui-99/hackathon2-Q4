@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(ls:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/create-new-feature.ps1\" -Json -Number 1 -ShortName \"todo-console-app\" -Description \"Phase I: Todo In-Memory Python Console App\")",
+      "Bash(bash:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(cat:*)",
+      "Bash(cd:*)",
+      "Bash(python:*)",
+      "Bash(dir /B /S *.py *.md pyproject.toml)",
+      "Bash(findstr:*)",
+      "Bash(tree:*)",
+      "Bash(dir:*)",
+      "Bash(dir /B srcservices*.py:*)",
+      "Bash(timeout 2 python:*)",
+      "Bash(uv run todo --help:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(mkdir:*)",
+      "Bash(uv add:*)"
+    ]
+  }
+}
